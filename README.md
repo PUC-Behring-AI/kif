@@ -5,7 +5,7 @@
 
 # Knowledge Integration Framework
 
-KIF is a Python framework for knowledge integration from [IBM Research](https://research.ibm.com/).
+KIF is a Python framework for knowledge integration.
 
 It is based on [Wikidata](https://www.wikidata.org/) and licensed under the open-source
 [Apache-2.0
