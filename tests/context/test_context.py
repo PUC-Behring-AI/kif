@@ -20,6 +20,7 @@ class Test(TestCase):
 
     def test__enter__(self) -> None:
         ctx0 = Context.top()
+        assert_type(ctx0, Context)
         with Context() as ctx1:
             self.assertEqual(Context.top(), ctx1)
             with Context() as ctx2:
