@@ -1,3 +1,4 @@
+# Copyright (C) 2026 PUC-Rio/PUC-Behring Institute for AI
 # Copyright (C) 2023-2025 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -34,6 +35,7 @@ usage:
 	@perl -wnle '${perl_usage}' ${MAKEFILE_LIST}
 
 CHECK_COPYRIGHT?= yes
+CHECK_COPYRIGHT_EXTRA?= Makefile
 CHECK_COPYRIGHT_IGNORE?= setup.py
 CHECK_DEPS?= htmlcov-clean
 CHECK_FLAKE8?= yes
@@ -173,27 +175,44 @@ check-pyright:
 
 # check copyright
 .PHONY: check-copyright
-check-copyright: check-copyright-python
+check-copyright: check-copyright-extra check-copyright-python
 
 .PHONY: check-copyright-python
 check-copyright-python:
 	@${DO_CHECK_COPYRIGHT} $(filter-out\
 	  ${CHECK_COPYRIGHT_IGNORE}, $(shell git ls-files '*.py'))
 
+.PHONY: check-copyright-extra
+check-copyright-extra:
+	@${DO_CHECK_COPYRIGHT} $(filter-out\
+	  ${CHECK_COPYRIGHT_IGNORE},\
+	  $(shell git ls-files ${CHECK_COPYRIGHT_EXTRA}))
+
 DO_CHECK_COPYRIGHT= ${PERL} -s -0777 -wnle '${perl_check_copyright}'
+perl_check_copyright_git_log_date:=\
+  git log --diff-filter=$1 --follow --format=%as -1 -- $$ARGV
 perl_check_copyright:=\
   BEGIN {\
     $$p = "\# " if !defined $$p;\
     $$q = $$p if !defined $$q;\
-    $$h = "${COPYRIGHT}" if !defined $$h;\
+    $$t = "${COPYRIGHT}" if !defined $$t;\
+    $$c = "Copyright \\(C\\) (20\\d\\d)(-(20\\d\\d))?\\ ";\
     $$l = "SPDX-License-Identifier: ${LICENSE}" if !defined $$l;\
-    $$regex = qr(\Q$$p\ECopyright \(C\) (20\d\d)(-(20\d\d))? \Q$$h\E\n\Q$$q$$l\E);\
-    sub guess_year {\
-      my $$date =\
-        `git log --diff-filter=$$_[0] --follow --format=%as -1 -- $$ARGV`\
-        || `date -I`;\
-      $$date =~ /^(\d\d\d\d)/s;\
-      return $$1;\
+    $$regex = qr(\Q$$p\E$$c\Q$$t\E\n(\Q$$p\E$$c.*\n)*\Q$$q$$l\E);\
+    sub get_added_or_modified_year {\
+      my ($$filter, $$default) = (@_);\
+      my $$date;\
+      if ($$filter eq "M" && system("git diff --cached --quiet -- $$ARGV")) {\
+        $$date = `date -I`;\
+      } else {\
+        $$date = `$(call perl_check_copyright_git_log_date "$$filter")`;\
+      }\
+      if ($$date) {\
+        $$date =~ /^(\d\d\d\d)/s;\
+        return $$1;\
+      } else {\
+        return $$default;\
+      }\
     }\
     $$errcnt = 0;\
     sub put_error {\
@@ -201,26 +220,19 @@ perl_check_copyright:=\
       $$errcnt++;\
     }\
   }\
-  if (/$$regex/m) {\
-    my $$start = $$1;\
-    my $$end = $$3 if defined $$3;\
-    my $$exp_start = guess_year("A");\
-    if ($$start ne $$exp_start) {\
-      put_error("copyright: bad start-year (expected $$exp_start, got $$start)");\
+  my $$added = get_added_or_modified_year("A");\
+  my $$modified = get_added_or_modified_year("M", $$added);\
+  if ($$modified ge ${COPYRIGHT_START_YEAR}) {\
+    if (/$$regex/m) {\
+      my $$cstart = $$1;\
+      my $$cend = $$3 // $$cstart;\
+      put_error("copyright: bad start year ($$cstart)")\
+        if !($$cstart le ${COPYRIGHT_START_YEAR});\
+      put_error("copyright: bad end year ($$cend)")\
+        if !($$modified eq $$cend);\
     } else {\
-      my $$exp_end = guess_year("M");\
-      if ($$exp_end eq $$exp_start) {\
-        if (defined $$end) {\
-          put_error("copyright: bad end-year (expected none, got $$end)");\
-        }\
-      } else {\
-        if (!defined $$end) {\
-          put_error("copyright: bad end-year (expected $$exp_end, got none)");\
-        }\
-      }\
+      put_error("copyright: bad or missing license tag");\
     }\
-  } else {\
-    put_error("copyright: bad or missing license tag");\
   }\
   END { exit($$errcnt); }\
   ${NULL}
