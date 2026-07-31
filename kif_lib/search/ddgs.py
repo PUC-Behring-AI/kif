@@ -1509,7 +1509,6 @@ class DDGS_Search(
             from ddgs.exceptions import DDGSException  # type: ignore
         except ImportError as err:
             raise _error_missing_ddgs(self.__class__.__qualname__) from err
-        assert isinstance(self.ddgs, DDGS)
         if in_url:
             search += ' inurl:' + in_url
         if site:
