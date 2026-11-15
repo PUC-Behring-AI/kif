@@ -9,6 +9,7 @@ from .dbpedia_lookup import DBpediaLookupSearch
 from .ddgs import DDGS_Search
 from .empty import EmptySearch
 from .httpx import HttpxSearch
+from .mixer import MixerSearch
 from .pubchem_ddgs import PubChemDDGS_Search
 from .pubchem_pug import PubChemPUG_Search
 from .wikidata_ddgs import WikidataDDGS_Search
@@ -21,6 +22,7 @@ __all__ = (
     'DDGS_Search',
     'EmptySearch',
     'HttpxSearch',
+    'MixerSearch',
     'PubChemDDGS_Search',
     'PubChemPUG_Search',
     'Search',
