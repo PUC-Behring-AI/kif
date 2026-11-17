@@ -1,3 +1,4 @@
+# Copyright (C) 2026 PUC-Rio/PUC-Behring Institute for AI
 # Copyright (C) 2025 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -1505,7 +1506,6 @@ class DDGS_Search(
                 [DDGS_Search.TData], DDGS_Search.TData | None],
     ) -> Iterator[DDGS_Search.TData]:
         try:
-            from ddgs import DDGS  # type: ignore
             from ddgs.exceptions import DDGSException  # type: ignore
         except ImportError as err:
             raise _error_missing_ddgs(self.__class__.__qualname__) from err
