@@ -1,4 +1,4 @@
-# Copyright (C) 2025 IBM Corp.
+# Copyright (C) 2026 PUC-Rio/PUC-Behring Institute for AI
 # SPDX-License-Identifier: Apache-2.0
 
 from __future__ import annotations
@@ -51,8 +51,7 @@ class MixerSearch(
 
     Parameters:
        search_name: Name of the search plugin to instantiate.
-       sources: Sources to mix: search instances, search plugin names, or
-          iterables thereof.
+       sources: Sources to mix.
        distinct: Whether to skip duplicated entities.
        method: Mixing method (``'roundrobin'`` or ``'chain'``).
     """

@@ -1,3 +1,4 @@
+# Copyright (C) 2026 PUC-Rio/PUC-Behring Institute for AI
 # Copyright (C) 2025 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
